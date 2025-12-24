@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTop10 | Geleceği Keşfet</title>
+    <style>
+        :root {
+            --bg-dark: #0a0f1d; --card-bg: #161e31; --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb; --text-white: #f8fafc;
+        }
+        body { font-family: 'Poppins', sans-serif; background: #0a0f1d; color: var(--text-white); margin: 0; }
+        
+        /* Navbar */
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 8%; background: rgba(22, 30, 49, 0.9); border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 28px; font-weight: 800; background: linear-gradient(to right, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-btn { background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); color: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; font-weight: 600; }
+
+        /* Grid ve Kartlar */
+        .container { max-width: 1200px; margin: 40px auto; padding: 20px; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; cursor: pointer; border: 1px solid transparent; transition: 0.3s; text-align: center; }
+        .card:hover { border-color: var(--neon-blue); transform: translateY(-5px); }
+        .card-image { font-size: 50px; margin-bottom: 10px; }
+
+        /* MODAL (Açılır Pencere) Stili */
+        .modal {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #1e293b; margin: 10% auto; padding: 30px; border: 2px solid var(--neon-blue);
+            width: 50%; border-radius: 20px; position: relative; animation: zoomIn 0.3s;
+        }
+        @keyframes zoomIn { from {transform: scale(0.5)} to {transform: scale(1)} }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: white; }
+        
+        /* Yorum Bölümü Stili */
+        .comment-section { margin-top: 20px; border-top: 1px solid #334155; padding-top: 20px; }
+        textarea { width: 100%; background: #0a0f1d; color: white; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .comment-btn { background: var(--neon-blue); border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">TECHTOP10</div>
+        <a href="login.html" class="login-btn">Giriş Yap</a>
+    </nav>
+
+    <div class="container">
+        <h1 style="text-align:center">En İyi 10 Teknoloji</h1>
+        <div class="card-grid" id="cardGrid">
+            </div>
+    </div>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle" style="color:var(--neon-blue)"></h2>
+            <p id="modalDescription" style="line-height:1.6; font-size:1.1rem;"></p>
+            
+            <div class="comment-section">
+                <h4>Yorum Yap</h4>
+                <textarea id="commentInput" placeholder="Bu teknoloji hakkında ne düşünüyorsun?"></textarea>
+                <button class="comment-btn" onclick="addComment()">Yorumu Gönder</button>
+                <div id="commentsList" style="margin-top:15px; font-size:0.9rem; color:#94a3b8;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Bilgiler (Veri Seti)
+        const techData = [
+            { title: "Yapay Zeka", icon: "🤖", desc: "Yapay zeka, makinelerin insan benzeri zeka göstermesini sağlar. Bugün sağlık, eğitim ve sanat dallarında devrim yaratıyor." },
+            { title: "İnsansı Robotlar", icon: "🦾", desc: "Tesla Optimus gibi robotlar, tehlikeli veya sıkıcı işleri insanların yerine yapmak için tasarlanıyor." },
+            { title: "Uzay Turizmi", icon: "🚀", desc: "Artık uzay sadece astronotlar için değil! SpaceX yakında herkesi yörüngeye taşımayı hedefliyor." },
+            { title: "Kuantum Bilgisayarlar", icon: "⚛️", desc: "Geleneksel bilgisayarların milyonlarca yılda yapacağı hesaplamaları saniyeler içinde bitirir." },
+            { title: "Otonom Araçlar", icon: "⚡", desc: "Şoförsüz araçlar, sensörler yardımıyla trafiği daha güvenli ve akıcı hale getiriyor." },
+            { title: "Gen Düzenleme", icon: "🧬", desc: "CRISPR teknolojisi ile hastalık yapan genler değiştirilebiliyor, genetik mucizeler yaşanıyor." },
+            { title: "Karma Gerçeklik", icon: "🥽", desc: "Apple Vision Pro gibi cihazlar, dijital objeleri gerçek odanızın içine yerleştirir." },
+            { title: "Blockchain", icon: "⛓️", desc: "Verilerin şifrelenmiş ve değiştirilemez bir şekilde saklandığı dünyanın en güvenli dijital defteri." },
+            { title: "Füzyon Enerjisi", icon: "☀️", desc: "Yıldızların enerjisini dünyada üreterek sınırsız ve temiz enerji elde etme projesidir." },
+            { title: "6G Teknolojisi", icon: "🌐", desc: "Holografik iletişim ve ışık hızında interneti mümkün kılacak geleceğin bağlantı standardı." }
+        ];
+
+        // Kartları Ekrana Bas
+        const grid = document.getElementById('cardGrid');
+        techData.forEach((item, index) => {
+            grid.innerHTML += `
+                <div class="card" onclick="openModal(${index})">
+                    <div class="card-image">${item.icon}</div>
+                    <h3>${item.title}</h3>
+                    <p>Detay için tıkla...</p>
+                </div>
+            `;
+        });
+
+        // Modal Fonksiyonları
+        function openModal(index) {
+            document.getElementById('modalTitle').innerText = techData[index].title;
+            document.getElementById('modalDescription').innerText = techData[index].desc;
+            document.getElementById('myModal').style.display = "block";
+            document.getElementById('commentsList').innerHTML = ""; // Yorumları temizle
+        }
+
+        function closeModal() {
+            document.getElementById('myModal').style.display = "none";
+        }
+
+        function addComment() {
+            const input = document.getElementById('commentInput');
+            if(input.value) {
+                const list = document.getElementById('commentsList');
+                list.innerHTML += `<p><b>Ziyaretçi:</b> ${input.value}</p>`;
+                input.value = "";
+            } else { alert("Lütfen bir yorum yazın!"); }
+        }
+    </script>
+    // index.html script kısmının en altına ekle:
+window.addEventListener('load', function() {
+    const user = localStorage.getItem('currentUser');
+    if (user) {
+        const loginBtn = document.querySelector('.login-btn');
+        loginBtn.innerText = "Hoş geldin, " + user;
+        loginBtn.style.background = "linear-gradient(45deg, #059669, #10b981)";
+        loginBtn.href = "#"; 
+    }
+});
+</body>
+</html>
